@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aplikasi Kompresi Citra LZW</title>
+    <!-- Favicon (Ikon di Tab Browser) -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💙</text></svg>">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Top Navbar iloveimg Style -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">
+                <i class="ri-heart-pulse-fill" style="color: #4a90e2; font-size: 1.5rem; margin-right: 5px;"></i>
+                <span style="font-weight: 900; font-size: 1.4rem;">PCD</span><span style="font-weight: 900; font-size: 1.4rem; color: #333;">LZW</span>
+            </div>
+            <div class="nav-links">
+                <a href="#" class="active">KOMPRESI CITRA</a>
+            </div>
+            <div class="nav-right">
+                <button class="btn-login" onclick="openLogin()">Masuk</button>
+                <button class="btn-register" onclick="openRegister()">Daftar</button>
+            </div>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <!-- Hero Upload Section -->
+        <section class="hero-section">
+            <h1>Kompres CITRA</h1>
+            <p class="subtitle">Kompres <span class="highlight">BMP</span> atau <span class="highlight">PNG</span> dengan algoritma lossless LZW terbaik.<br>Kurangi ukuran matriks RAW gambar Anda sekaligus tanpa merusak kualitas.</p>
+            
+            <div class="upload-box" id="dropZone">
+                <button class="btn-massive" onclick="document.getElementById('fileInput').click()">Pilih gambar</button>
+                <input type="file" id="fileInput" accept=".bmp,.png" hidden>
+                <p class="drop-text">atau jatuhkan gambar di sini</p>
+            </div>
+            
+            <div id="uploadProgress" class="progress-container hidden">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+                <p id="progressText">Memproses kompresi LZW...</p>
+            </div>
+            
+            <!-- Download Result Area -->
+            <div id="downloadZone" class="download-box hidden">
+                <h2 class="success-title">Gambar Anda telah dikompresi!</h2>
+                <p class="success-subtitle" id="compressionStats">Ukuran menyusut dari X menjadi Y</p>
+                
+                <button class="btn-massive btn-download-massive" onclick="downloadLast()">
+                    <i class="ri-download-cloud-2-line"></i> Unduh Gambar
+                </button>
+                
+                <button class="btn-secondary" onclick="resetUpload()">
+                    <i class="ri-refresh-line"></i> Kompres gambar lain
+                </button>
+            </div>
+        </section>
+
+        <!-- Dashboard Stats & Table Section -->
+        <section id="dashboardSection" class="dashboard-section hidden">
+            <div class="container">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <h3>Total Citra</h3>
+                        <p id="totalFiles">0</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Efisiensi Penyimpanan</h3>
+                        <p id="spaceSaved">0 B</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Rata-rata Rasio</h3>
+                        <p id="avgRatio">0x</p>
+                    </div>
+                </div>
+
+                <div class="section-header">
+                    <h2>Riwayat Kompresi</h2>
+                    <button class="btn-danger" onclick="deleteAllArchives()">
+                        <i class="ri-delete-bin-line"></i> Kosongkan Riwayat
+                    </button>
+                </div>
+                <div class="table-container">
+                    <table id="archivesTable">
+                        <thead>
+                            <tr>
+                                <th>Nama File</th>
+                                <th>Ukuran RAW (Asli)</th>
+                                <th>Ukuran Kompresi (LZW)</th>
+                                <th>Rasio</th>
+                                <th>Waktu Eksekusi</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Data otomatis dimuat dari API -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Login Modal -->
+    <div id="loginModal" class="modal-overlay hidden">
+        <div class="auth-modal-box">
+            <button class="btn-close" onclick="closeAuthModals()"><i class="ri-close-line"></i></button>
+            <h3 class="auth-title">Masuk ke Akun Anda</h3>
+            <form id="loginForm" onsubmit="handleAuth(event, 'Masuk')">
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" required placeholder="contoh@email.com">
+                </div>
+                <div class="form-group">
+                    <label>Kata Sandi</label>
+                    <input type="password" required placeholder="Masukkan kata sandi">
+                </div>
+                <button type="submit" class="btn-auth-submit">Masuk</button>
+            </form>
+            <p class="auth-switch">Belum punya akun? <a href="#" onclick="switchModal('register')">Daftar sekarang</a></p>
+        </div>
+    </div>
+
+    <!-- Register Modal -->
+    <div id="registerModal" class="modal-overlay hidden">
+        <div class="auth-modal-box">
+            <button class="btn-close" onclick="closeAuthModals()"><i class="ri-close-line"></i></button>
+            <h3 class="auth-title">Buat Akun Baru</h3>
+            <form id="registerForm" onsubmit="handleAuth(event, 'Daftar')">
+                <div class="form-group">
+                    <label>Nama Lengkap</label>
+                    <input type="text" required placeholder="Nama Anda">
+                </div>
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" required placeholder="contoh@email.com">
+                </div>
+                <div class="form-group">
+                    <label>Kata Sandi</label>
+                    <input type="password" required placeholder="Buat kata sandi">
+                </div>
+                <button type="submit" class="btn-auth-submit">Daftar</button>
+            </form>
+            <p class="auth-switch">Sudah punya akun? <a href="#" onclick="switchModal('login')">Masuk di sini</a></p>
+        </div>
+    </div>
+
+    <!-- Custom Confirm Modal -->
+    <div id="customModal" class="modal-overlay hidden">
+        <div class="modal-box">
+            <h3 class="modal-title">Konfirmasi</h3>
+            <p class="modal-text" id="modalText">Yakin ingin menghapus arsip ini?</p>
+            <div class="modal-actions">
+                <button class="btn-modal-ok" id="modalBtnOk">OK</button>
+                <button class="btn-modal-cancel" id="modalBtnCancel">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <div class="footer-container">
+            <p>&copy; iLovePCD 2026 &reg; - Aplikasi Kompresi Gambar Anda</p>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
