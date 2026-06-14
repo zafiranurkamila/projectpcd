@@ -24,9 +24,11 @@ class Archive(Base):
     
     original_filename = Column(String)
     stored_filename = Column(String)
-    file_path = Column(String)
-    original_size = Column(Integer) # Dalam Bytes
-    compressed_size = Column(Integer) # Dalam Bytes
+    file_path = Column(String)               # Path ke file .lzw (compressed)
+    original_file_path = Column(String)      # Path ke file PNG asli (tidak di‑hapus)
+    original_sha256 = Column(String)         # SHA‑256 hash of original PNG
+    original_size = Column(Integer) # Dalam Bytes (raw pixel size)
+    compressed_size = Column(Integer) # Dalam Bytes (ukuran .lzw)
     compression_ratio = Column(Float)
     processing_time_ms = Column(Float)
     uploaded_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))

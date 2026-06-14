@@ -82,3 +82,35 @@ def calculate_mse(imageA, imageB):
     err = np.sum((imageA.astype("float") - imageB.astype("float")) ** 2)
     err /= float(imageA.shape[0] * imageA.shape[1])
     return err
+def pack_codes(codes):
+    if not codes:
+        return b""
+    max_code = max(codes)
+    bits = max(9, max_code.bit_length())
+    bits = min(bits, 16)
+    bit_buffer = 0
+    bit_len = 0
+    out = bytearray()
+    for code in codes:
+        bit_buffer = (bit_buffer << bits) | code
+        bit_len += bits
+        while bit_len >= 8:
+            bit_len -= 8
+            out.append((bit_buffer >> bit_len) & 0xFF)
+    if bit_len > 0:
+        out.append((bit_buffer << (8 - bit_len)) & 0xFF)
+    return bytes(out)
+
+def unpack_codes(data, bits):
+    if bits < 1:
+        raise ValueError("bits must be positive")
+    bit_buffer = 0
+    bit_len = 0
+    codes = []
+    for b in data:
+        bit_buffer = (bit_buffer << 8) | b
+        bit_len += 8
+        while bit_len >= bits:
+            bit_len -= bits
+            codes.append((bit_buffer >> bit_len) & ((1 << bits) - 1))
+    return codes
