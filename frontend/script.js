@@ -11,7 +11,7 @@ const archivesTable = document.getElementById('archivesTable').querySelector('tb
 let lastUploadedId = null;
 
 // URL Backend API
-const API_BASE_URL = 'http://127.0.0.1:8000';
+const API_BASE_URL = 'http://127.0.0.1:8080';
 
 const formatBytes = (bytes) => {
     if (bytes === 0) return '0 B';
